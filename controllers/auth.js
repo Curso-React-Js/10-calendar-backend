@@ -89,12 +89,37 @@ const login = async(req = request, res = response) => {
 
 }
 
-const renewToken = (req = request, res = response) => {
+const renewToken = async(req = request, res = response) => {
+  const { uid, name } = req;
 
-  res.status(200).json({
-    ok: true,
-    msg: 'renew'
-  });
+  try {
+    const user = await User.findById(uid);
+
+    if (!user) {
+      return res.status(400).json({
+        pk: false,
+        msg: 'Token invalido'
+      });
+    }
+
+    // Generar JWT
+    const token = await generarJWT(user.id, user.name);
+
+    res.status(200).json({
+      ok: true,
+      uid,
+      name,
+      email: user.email,
+      token
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: 'Por favor hable con el administrador'
+    });
+  }
 
 }
 
